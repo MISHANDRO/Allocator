@@ -6,7 +6,7 @@ template<typename T>
 class PoolComparator {
 public:
     explicit PoolComparator(size_t need_size)
-            : need_size_(need_size)
+        : need_size_(need_size)
     {}
 
     bool operator()(const Pool<T>* lhs, const Pool<T>* rhs)

@@ -3,8 +3,6 @@
 #include "PoolSettings.h"
 
 #include <vector>
-#include <cmath>
-#include <map>
 
 template<typename T>
 class Pool {
@@ -20,12 +18,12 @@ public:
 
     T* allocate(size_t n) {
         size_t allocate_count = (n % size_pieces_) ? n / size_pieces_ + 1 : n / size_pieces_;
-        bool flag = false;
+        bool flag_find = false;
         size_t free_iterator = 0;
 
         for (auto& [index, count]: free) {
             if (count >= allocate_count) {
-                flag = true;
+                flag_find = true;
                 free_iterator = index;
 
                 index += allocate_count;
@@ -35,7 +33,7 @@ public:
             }
         }
 
-        if (flag) {
+        if (flag_find) {
             return ptr_ + free_iterator * size_pieces_;
         } else {
             return nullptr;
@@ -71,7 +69,7 @@ public:
         return count_pieces_ * size_pieces_;
     }
 
-    [[nodiscard]] size_t CountPieces() const {
+    [[maybe_unused]] [[nodiscard]] size_t CountPieces() const {
         return count_pieces_;
     }
 

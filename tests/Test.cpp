@@ -6,7 +6,7 @@
 #include <vector>
 
 Test::Test(const std::filesystem::path& path) {
-    if (!exists(path)){
+    if (!std::filesystem::exists(path)){
         throw std::invalid_argument("no such folder: " + path.string());
     }
 
