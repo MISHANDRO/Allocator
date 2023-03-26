@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <cmath>
-#include <cstdint>
 #include <map>
 
 template<typename T>
@@ -24,17 +23,14 @@ public:
         bool flag = false;
         size_t free_iterator = 0;
 
-        for (int j = 0; j < free.size(); j++) {
-            auto i = free[j];
-            if (i.second >= allocate_count) {
+        for (auto& [index, count]: free) {
+            if (count >= allocate_count) {
                 flag = true;
-                free_iterator = i.first;
-                if (i.second == allocate_count) {
-                    free.erase(free.begin() + j);
-                } else {
-                    free[j].first += allocate_count;
-                    free[j].second -= allocate_count;
-                }
+                free_iterator = index;
+
+                index += allocate_count;
+                count -= allocate_count;
+
                 break;
             }
         }
@@ -51,15 +47,14 @@ public:
             size_t index = ptr - ptr_;
             free.emplace_back(index, n);
 
-
             for (int j = 0; j < free.size(); j++) {
-                auto i = free[j];
-                if (i.first == index + n) {
-                    free.back().second += i.second;
+                auto cur = free[j];
+                if (cur.first == index + n) {
+                    free.back().second += cur.second;
                     free.erase(free.begin() + j);
                 }
 
-                if (i.first + i.second == index) {
+                if (cur.first + cur.second == index) {
                     free.back().first = free[j].first;
                     free.back().second += free[j].second;
                     free.erase(free.begin() + j);

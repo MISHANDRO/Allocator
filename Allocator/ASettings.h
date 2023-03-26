@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <PoolSettings.h>
+#include "PoolSettings.h"
 
 class ASettings {
 public:
@@ -14,7 +13,7 @@ public:
         another_pools_ = another_pools;
     }
 
-    static size_t CountPools()  {
+    static size_t CountPools() {
         return count_pools_;
     }
 
@@ -22,7 +21,7 @@ public:
         return default_pools_;
     }
 
-    static std::vector<PoolSettings> AnotherPools()  {
+    static std::vector<PoolSettings> AnotherPools() {
         return another_pools_;
     }
 

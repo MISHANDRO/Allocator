@@ -2,60 +2,28 @@
 
 #include "ASettings.h"
 #include "Pool.h"
+#include "PoolComparator.h"
 
 #include <stdexcept>
 #include <algorithm>
 
 template<typename T>
-class Comparator {
-public:
-    explicit Comparator(size_t need_size)
-            : need_size_(need_size)
-    {}
-
-    bool operator()(const Pool<T>* lhr, const Pool<T>* rhr)
-    {
-        if (lhr->size() < need_size_) {
-            return false;
-        }
-
-        if (rhr->size() < need_size_) {
-            return true;
-        }
-
-        size_t excess1 = lhr->SizePieces() - (need_size_ % lhr->SizePieces());
-        size_t excess2 = rhr->SizePieces() - (need_size_ % rhr->SizePieces());
-
-        if (excess1 == excess2) {
-            return lhr->SizePieces() > rhr->SizePieces();
-        } else {
-            return excess1 < excess2;
-        }
-    }
-
-private:
-    size_t need_size_;
-};
-
-template<typename T>
-class Allocator {
+class MemoryPoolsAllocator {
 public:
     using value_type = T;
     using pointer = T*;
+    using const_pointer = const T*;
+
     using reference = T&;
     using const_reference = const T&;
-    using const_pointer = const T*;
+
     using void_pointer = void*;
     using const_void_pointer = const void*;
+
     using size_type = size_t;
     using difference_type = std::ptrdiff_t;
 
-    template <typename U>
-    struct rebind {
-        using other = Allocator<U>;
-    };
-
-    explicit Allocator() {
+    explicit MemoryPoolsAllocator() {
         pools_.resize(ASettings::CountPools());
         for (size_t i = 0; i < ASettings::CountPools(); i++) {
             if (i < ASettings::AnotherPools().size()) {
@@ -66,12 +34,12 @@ public:
         }
     }
 
-    Allocator(const Allocator& other) = default;
-    Allocator& operator=(const Allocator& other) = default;
+    MemoryPoolsAllocator(const MemoryPoolsAllocator& other) = default;
+    MemoryPoolsAllocator& operator=(const MemoryPoolsAllocator& other) = default;
 
     pointer allocate(size_t n) {
 
-        std::sort(pools_.begin(), pools_.end(), Comparator<T>(n));
+        std::sort(pools_.begin(), pools_.end(), PoolComparator<T>(n));
 
         for (Pool<value_type>* i : pools_) {
             pointer ptr = i->allocate(n);
@@ -92,7 +60,7 @@ public:
         }
     }
 
-    ~Allocator() {
+    ~MemoryPoolsAllocator() {
         for (Pool<value_type>* i : pools_) {
             delete i;
         }
@@ -103,11 +71,11 @@ private:
 };
 
 template<typename T, typename U>
-bool operator==(const Allocator<T>& lhr, const Allocator<U>& rhl) {
-    return false;
+bool operator==(const MemoryPoolsAllocator<T>& lhs, const MemoryPoolsAllocator<U>& rhs) {
+    return lhs.pools_ == rhs.pools_;
 }
 
 template<typename T, typename U>
-bool operator!=(const Allocator<T>& lhr, const Allocator<U>& rhr) {
-    return !(lhr == rhr);
+bool operator!=(const MemoryPoolsAllocator<T>& lhs, const MemoryPoolsAllocator<U>& rhs) {
+    return !(lhs == rhs);
 }
